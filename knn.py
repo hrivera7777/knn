@@ -12,11 +12,15 @@ iris_classes = iris.iloc[:, [0] + [-1]]
 # irisompare = iris.drop(columns=['class'], axis=1)
 
 
-# # randomize data
+# randomize data
 iris = iris.sample(frac=1)
 
+training_perc = float(
+    input("Enter the training percentage value like '0.7': "))
+
 # separate into train and test data
-train = iris.sample(frac=0.7, random_state=200)  # random state is a seed value
+# random state is a seed value
+train = iris.sample(frac=training_perc, random_state=200)
 test = iris.drop(train.index)
 
 
@@ -80,7 +84,7 @@ def validate_prediction(test_class, class_prediction):
     return test_class == class_prediction
 
 
-def get_prediction(test, trains, k):
+def get_prediction(test, trains, k, oneItem=False):
     # element --> [[[id_test, id_train, distance]], [...], [...]]
     dmatrix = get_nearest_neighbors(test, train, k)
     count = 0
@@ -91,7 +95,24 @@ def get_prediction(test, trains, k):
         if validate_prediction(get_class(arr[0][0]), class_prediction):
             count += 1
 
-    return (f"accuracy: {round(count / len(test), 5) * 100}% 😊", f"prediction: {predictions}")
+    if not oneItem:
+        return (f"accuracy: {round(count / len(test), 5) * 100}% 😊", f"prediction: {predictions}")
+    return f"prediction: {predictions}"
 
 
 print(get_prediction(test, train, k))
+
+userValues = input(
+    "\nintroduce Sepal-length, sepal-width, petal-length, petal-width \n ").split()
+
+userValues = [float(el) for el in userValues]
+# required 4 values
+assert len(userValues) == 4
+# custom id
+userValues.insert(0, 1.0)
+# dummy category
+userValues.append("noType")
+
+print("\nNew Value \n")
+print(get_prediction(pd.DataFrame([userValues], columns=[
+      "ID", "Longitud sepalo", "ancho del sepalo", "longitud del petalo", "ancho del petalo", "class"]), train, k, True))
